@@ -6,6 +6,7 @@ import Peer, { MediaConnection } from 'peerjs';
 
 interface Params {
   ekycUrl: string;
+  [key: string]: string;
 }
 
 const EkycPage: React.FC = () => {
