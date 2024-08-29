@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Peer, { MediaConnection } from 'peerjs';
 
 const EkycPage: React.FC = () => {
@@ -15,6 +15,55 @@ const EkycPage: React.FC = () => {
   const peerInstance = useRef<Peer | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
+
+  const uploadToServer = useCallback((blob: Blob) => {
+    setIsUploading(true);
+    setUploadSuccess(false);
+
+    const formData = new FormData();
+    formData.append('video', blob, 'recording.webm');
+
+    fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Successfully uploaded to server', data);
+      setIsUploading(false);
+      setUploadSuccess(true);
+    })
+    .catch(err => {
+      console.error('Error uploading to server', err);
+      setIsUploading(false);
+      setUploadSuccess(false);
+    });
+  }, []);
+
+  const startRecording = useCallback((stream: MediaStream) => {
+    console.log("Starting recording");
+    const mediaRecorder = new MediaRecorder(stream);
+    mediaRecorderRef.current = mediaRecorder;
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunksRef.current.push(event.data);
+      }
+    };
+
+    mediaRecorder.start();
+  }, []);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+        uploadToServer(blob);
+        recordedChunksRef.current = [];
+      };
+    }
+  }, [uploadToServer]);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -52,57 +101,8 @@ const EkycPage: React.FC = () => {
     };
   }, [isAdmin]);
 
-  const startRecording = (stream: MediaStream) => {
-    console.log("Starting recording");
-    const mediaRecorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = mediaRecorder;
-
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordedChunksRef.current.push(event.data);
-      }
-    };
-
-    mediaRecorder.start();
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-        uploadToServer(blob);
-        recordedChunksRef.current = [];
-      };
-    }
-  };
-
-  const uploadToServer = (blob: Blob) => {
-    setIsUploading(true);
-    setUploadSuccess(false);
-
-    const formData = new FormData();
-    formData.append('video', blob, 'recording.webm');
-
-    fetch('/api/upload', {
-      method: 'POST',
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Successfully uploaded to server', data);
-      setIsUploading(false);
-      setUploadSuccess(true);
-    })
-    .catch(err => {
-      console.error('Error uploading to server', err);
-      setIsUploading(false);
-      setUploadSuccess(false);
-    });
-  };
-
-  const call = (remotePeerId: string) => {
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+  const call = useCallback((remotePeerId: string) => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then(mediaStream => {
         if (currentUserVideoRef.current) {
           currentUserVideoRef.current.srcObject = mediaStream;
@@ -119,7 +119,7 @@ const EkycPage: React.FC = () => {
         }
       })
       .catch(err => console.error('Failed to get local stream', err));
-  };
+  }, []);
 
   return (
     <div className="flex flex-col h-screen bg-gray-800">
