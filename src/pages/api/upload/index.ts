@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+// import type { NextApiRequest, NextApiResponse } from 'next';
 import { S3Client } from '@aws-sdk/client-s3';
 import { fromEnv } from '@aws-sdk/credential-provider-env';
 import multer from 'multer';
@@ -21,10 +21,6 @@ const uploadHandler: NextApiHandler = async (req, res) => {
   upload.single('video')(req as any, res as any, async (err: any) => {
     if (err) {
       return res.status(500).json({ error: 'Error processing file', details: err.message });
-    }
-
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
     }
 
     try {

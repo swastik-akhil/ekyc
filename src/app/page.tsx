@@ -7,8 +7,8 @@ const EkycPage: React.FC = () => {
   const [peerId, setPeerId] = useState<string>('');
   const [remotePeerIdValue, setRemotePeerIdValue] = useState<string>('');
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [isUploading, setIsUploading] = useState<boolean>(false); // Loading state
-  const [uploadSuccess, setUploadSuccess] = useState<boolean>(false); // Success state
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
 
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const currentUserVideoRef = useRef<HTMLVideoElement>(null);
@@ -78,8 +78,8 @@ const EkycPage: React.FC = () => {
   };
 
   const uploadToServer = (blob: Blob) => {
-    setIsUploading(true); // Show loading state
-    setUploadSuccess(false); // Reset success message
+    setIsUploading(true);
+    setUploadSuccess(false);
 
     const formData = new FormData();
     formData.append('video', blob, 'recording.webm');
@@ -91,13 +91,13 @@ const EkycPage: React.FC = () => {
     .then(response => response.json())
     .then(data => {
       console.log('Successfully uploaded to server', data);
-      setIsUploading(false); // Hide loading state
-      setUploadSuccess(true); // Show success message
+      setIsUploading(false);
+      setUploadSuccess(true);
     })
     .catch(err => {
       console.error('Error uploading to server', err);
-      setIsUploading(false); // Hide loading state
-      setUploadSuccess(false); // Optionally handle error state
+      setIsUploading(false);
+      setUploadSuccess(false);
     });
   };
 
@@ -122,46 +122,36 @@ const EkycPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center p-6 font-sans bg-gray-900 min-h-screen">
-      <h1 className="text-2xl text-lime-500 font-semibold mb-6">Current User ID: <span className="text-blue-500">{peerId}</span></h1>
-      <div className="mb-6 flex flex-col md:flex-row items-center gap-4">
-        <input
-          type="text"
-          className="p-2 text-lg text-fuchsia-600 border border-gray-300 rounded-md"
-          placeholder="Enter remote peer ID"
-          value={remotePeerIdValue}
-          onChange={e => setRemotePeerIdValue(e.target.value)}
-        />
-        <button
-          className="px-4 py-2 text-lg text-amber-600 bg-white-500 rounded-md border border-amber-600 hover:bg-amber-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-amber-300"
-          onClick={() => {
-            navigator.clipboard.writeText(peerId);
-          }}
-        >
-          Copy ID
-        </button>
-
-        <button 
-          className="px-4 py-2 text-lg text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-          onClick={() => call(remotePeerIdValue)}
-        >
-          Call
-        </button>
-      </div>
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="flex flex-col items-center">
-          <h2 className="text-xl font-medium mb-2 text-white">Your Video</h2>
-          <video ref={currentUserVideoRef} className="w-80 h-60 border border-gray-300 rounded-md" autoPlay muted />
-        </div>
-        <div className="flex flex-col items-center">
-          <h2 className="text-xl font-medium mb-2 text-white">Remote Video</h2>
-          <video ref={remoteVideoRef} className="w-80 h-60 border border-gray-300 rounded-md" autoPlay />
-        </div>
-      </div>
-      {isAdmin && (
-        <div className="mt-6 flex gap-4">
+    <div className="flex flex-col h-screen bg-gray-800">
+      <header className="flex flex-col sm:flex-row justify-between items-center p-4 bg-gray-900 text-white border-b border-gray-700">
+        <h1 className="text-xl font-semibold text-center sm:text-left">Meeting ID: <span className="text-blue-400">{peerId}</span></h1>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-4 sm:mt-0">
+          <input
+            type="text"
+            className="p-2 text-lg text-gray-900 border border-gray-600 rounded-md bg-white w-full sm:w-auto"
+            placeholder="Enter remote peer ID"
+            value={remotePeerIdValue}
+            onChange={e => setRemotePeerIdValue(e.target.value)}
+          />
           <button
-            className="px-4 py-2 text-lg text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300"
+            className="px-4 py-2 text-lg text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onClick={() => navigator.clipboard.writeText(peerId)}
+          >
+            Copy ID
+          </button>
+          <button
+            className="px-4 py-2 text-lg text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+            onClick={() => call(remotePeerIdValue)}
+          >
+            Call
+          </button>
+        </div>
+      </header>
+
+      {isAdmin && (
+        <div className="flex flex-col sm:flex-row justify-center p-4 bg-gray-900 border-t border-gray-700">
+          <button
+            className="px-4 py-2 text-lg text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 mb-2 sm:mb-0 sm:mr-4"
             onClick={() => {
               if (remoteVideoRef.current?.srcObject) {
                 startRecording(remoteVideoRef.current.srcObject as MediaStream);
@@ -171,29 +161,53 @@ const EkycPage: React.FC = () => {
             Start Recording
           </button>
           <button
-            className="px-4 py-2 text-lg text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
+            className="px-4 py-2 text-lg text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
             onClick={stopRecording}
           >
             End Recording
           </button>
         </div>
       )}
-      {isUploading && (
-        <div className="mt-4 text-center flex flex-col items-center">
-          <p className="text-white mb-2">Please don't close the window while it's uploading...</p>
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 border-4 border-t-4 border-gray-200 border-opacity-50 rounded-full animate-spin border-blue-500"></div>
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 bg-blue-500 rounded-full animate-pulse"></div>
-            </div>
+
+      <main className="flex-1 flex flex-col justify-center items-center bg-gray-900 p-4">
+        <div className="flex flex-col sm:flex-row w-[99%] h-[99%] gap-4">
+          <div className="flex-1 flex flex-col relative">
+            <h2 className="text-xl text-white font-medium mb-2">Your Video</h2>
+            <video 
+              ref={currentUserVideoRef} 
+              className="w-full h-full border border-gray-700 rounded-lg" 
+              autoPlay 
+              muted 
+            />
+          </div>
+          <div className="flex-1 flex flex-col relative">
+            <h2 className="text-xl text-white font-medium mb-2">Remote Video</h2>
+            <video 
+              ref={remoteVideoRef} 
+              className="w-full h-full border border-gray-700 rounded-lg" 
+              autoPlay 
+            />
           </div>
         </div>
+      </main>
+
+      {isUploading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75">
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-10 h-10 border-4 border-t-4 border-gray-600 border-opacity-50 rounded-full animate-spin border-blue-500"></div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-500 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          <p className="text-white ml-4 text-sm">Do not close the window while uploading the video...!</p>
+        </div>
       )}
+
       {uploadSuccess && (
-        <div className="mt-4 text-center">
-          <p className="text-green-500 text-lg font-semibold">Uploaded successfully!</p>
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 p-4 bg-green-600 text-white rounded-lg shadow-lg">
+          <p className="text-lg font-semibold">Uploaded successfully!</p>
         </div>
       )}
     </div>
