@@ -26,6 +26,7 @@ const uploadHandler: NextApiHandler = async (req, res) => {
     try {
       const fileStream = new stream.PassThrough();
       fileStream.end((req as any).file.buffer);
+      
 
       const uploadParams = {
         Bucket: process.env.UPLOAD_BUCKET_NAME,
@@ -33,7 +34,6 @@ const uploadHandler: NextApiHandler = async (req, res) => {
         Body: fileStream,
         ContentType: (req as any).file?.mimetype,
       };
-
       const upload = new Upload({
         client: s3,
         params: uploadParams,

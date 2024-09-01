@@ -7,8 +7,12 @@ const EkycPage: React.FC = () => {
   const [peerId, setPeerId] = useState<string>('');
   const [remotePeerIdValue, setRemotePeerIdValue] = useState<string>('');
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [applicantId, setApplicantId] = useState<string>('');
+  const [ekycCode, setEkycCode] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
+  const [isUploadingScreenshot, setIsUploadingScreenshot] = useState<boolean>(false);
+  const [uploadScreenshotSuccess, setUploadScreenshotSuccess] = useState<boolean>(false);
 
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const currentUserVideoRef = useRef<HTMLVideoElement>(null);
@@ -22,6 +26,8 @@ const EkycPage: React.FC = () => {
 
     const formData = new FormData();
     formData.append('video', blob, 'recording.webm');
+    formData.append('applicantId', applicantId);
+    formData.append('ekycCode', ekycCode);
 
     fetch('/api/upload', {
       method: 'POST',
@@ -38,7 +44,33 @@ const EkycPage: React.FC = () => {
       setIsUploading(false);
       setUploadSuccess(false);
     });
-  }, []);
+  }, [applicantId, ekycCode]);
+
+  const uploadScreenshotToServer = useCallback((blob: Blob) => {
+    setIsUploadingScreenshot(true);
+    setUploadScreenshotSuccess(false);
+
+    const formData = new FormData();
+    formData.append('screenshot', blob, 'screenshot.png');
+    formData.append('applicantId', applicantId);
+    formData.append('ekycCode', ekycCode);
+
+    fetch('/api/upload-screenshot', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Successfully uploaded screenshot to server', data);
+      setIsUploadingScreenshot(false);
+      setUploadScreenshotSuccess(true);
+    })
+    .catch(err => {
+      console.error('Error uploading screenshot to server', err);
+      setIsUploadingScreenshot(false);
+      setUploadScreenshotSuccess(false);
+    });
+  }, [applicantId, ekycCode]);
 
   const startRecording = useCallback((stream: MediaStream) => {
     console.log("Starting recording");
@@ -65,10 +97,38 @@ const EkycPage: React.FC = () => {
     }
   }, [uploadToServer]);
 
+  const captureScreenshot = useCallback(() => {
+    const video = currentUserVideoRef.current;
+    if (video) {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          if (blob) {
+            uploadScreenshotToServer(blob);
+          }
+        }, 'image/png');
+      }
+    }
+  }, [uploadScreenshotToServer]);
+
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     setIsAdmin(queryParams.get('admin') === 'true');
-    const peer = new Peer();
+    setApplicantId(queryParams.get('applicantId') || '');
+    setEkycCode(queryParams.get('ekycCode') || '');
+
+    console.log('isAdmin:', isAdmin);
+    console.log('applicantId:', applicantId);
+    console.log('ekycCode:', ekycCode);
+
+    const peerId = isAdmin ? ekycCode : applicantId;
+
+
+    const peer = new Peer(peerId);
 
     peer.on('open', (id: string) => {
       setPeerId(id);
@@ -99,7 +159,7 @@ const EkycPage: React.FC = () => {
         peerInstance.current.destroy();
       }
     };
-  }, [isAdmin]);
+  }, [applicantId, ekycCode, isAdmin]);
 
   const call = useCallback((remotePeerId: string) => {
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
@@ -166,6 +226,12 @@ const EkycPage: React.FC = () => {
           >
             End Recording
           </button>
+          <button
+            className="px-4 py-2 text-lg text-white bg-yellow-600 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 mt-2"
+            onClick={captureScreenshot}
+          >
+            Upload Screenshot
+          </button>
         </div>
       )}
 
@@ -208,6 +274,26 @@ const EkycPage: React.FC = () => {
       {uploadSuccess && (
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 p-4 bg-green-600 text-white rounded-lg shadow-lg">
           <p className="text-lg font-semibold">Uploaded successfully!</p>
+        </div>
+      )}
+
+      {isUploadingScreenshot && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75">
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-10 h-10 border-4 border-t-4 border-gray-600 border-opacity-50 rounded-full animate-spin border-yellow-500"></div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-10 h-10 bg-yellow-500 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          <p className="text-white ml-4 text-sm">Do not close the window while uploading the screenshot...!</p>
+        </div>
+      )}
+
+      {uploadScreenshotSuccess && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 p-4 bg-yellow-600 text-white rounded-lg shadow-lg">
+          <p className="text-lg font-semibold">Screenshot uploaded successfully!</p>
         </div>
       )}
     </div>
