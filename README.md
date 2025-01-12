@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# eKYC
 
-## Getting Started
+This project implements an **eKYC (Electronic Know Your Customer)** feature using **TypeScript**, **Next.js**, and **PeerJS**. The eKYC feature enables users to verify their identity via video calls and document sharing, making it efficient and secure for online verification.
 
-First, run the development server:
+## Features
+
+- **Real-time video call** integration using PeerJS for peer-to-peer communication.
+- **File storage using AWS S3** to securely store and retrieve documents.
+- Seamless user interface built with **Next.js** for SSR (Server-Side Rendering) and client-side rendering.
+- Built with **TypeScript** for type safety and better development experience.
+
+## Technologies Used
+
+- **Next.js**: A React framework for building static and dynamic web applications.
+- **PeerJS**: An open-source library for creating real-time peer-to-peer connections. Used for video streaming and communication.
+- **TypeScript**: A superset of JavaScript that provides static typing and modern JavaScript features.
+
+## Installation
+
+To run the project locally, follow these steps:
+
+### Prerequisites
+
+- **Node.js** (version 14 or higher)
+- **npm** (Node Package Manager)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/swastik-akhil/ekyc
+cd ekyc
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Start the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The application will now be running at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Contributing
 
-## Learn More
+If you would like to contribute to this project, feel free to fork the repository, make your changes, and create a pull request.
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This project is licensed under the MIT License.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Feel free to modify and expand upon this README to suit the exact details and functionality of your project. Let me know if you need further modifications!
