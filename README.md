@@ -54,6 +54,5 @@ If you would like to contribute to this project, feel free to fork the repositor
 
 This project is licensed under the MIT License.
 
----
 
 Feel free to modify and expand upon this README to suit the exact details and functionality of your project. Let me know if you need further modifications!
